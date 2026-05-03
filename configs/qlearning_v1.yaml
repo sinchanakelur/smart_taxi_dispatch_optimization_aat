@@ -1,0 +1,21 @@
+run_id: qlearning_v1
+
+# Environment settings
+grid_size: 7
+num_taxis: 4
+max_steps: 50
+
+# Training settings
+episodes: 500
+learning_rate: 0.1
+gamma: 0.9
+
+# Exploration (basic)
+epsilon: 0.8
+epsilon_decay: 0.995
+min_epsilon: 0.05
+
+# Output paths
+policy_path: policies/policy_v1.pkl
+results_path: results/results_qlearning_v1.json
+plot_path: plots/reward_curve_v1.png
