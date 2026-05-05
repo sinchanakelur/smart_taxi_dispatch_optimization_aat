@@ -92,7 +92,7 @@ def train(config):
 
     # Save policy
     policy_data = {
-        "q_table": dict(q_table),
+        "q_table": {str(k): v.tolist() for k, v in q_table.items()},  # ← serialization-safe
         "num_actions": num_actions,
         "config": config
     }
@@ -125,11 +125,18 @@ def train(config):
         json.dump(results, f, indent=4)
 
     # Save reward curve
-    plt.figure()
-    plt.plot(episode_rewards)
+    window = 20
+    smoothed = np.convolve(episode_rewards, np.ones(window)/window, mode="valid")
+
+    plt.figure(figsize=(10, 5))
+    plt.plot(episode_rewards, alpha=0.3, color="steelblue", label="Raw reward")
+    plt.plot(range(window - 1, len(episode_rewards)), smoothed,
+            color="red", linewidth=2, label=f"{window}-ep moving avg")
     plt.xlabel("Episode")
     plt.ylabel("Total Reward")
     plt.title(f"Reward Curve - {run_id}")
+    plt.legend()
+    plt.tight_layout()
     plt.savefig(config["plot_path"])
     plt.close()
 

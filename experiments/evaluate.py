@@ -1,7 +1,6 @@
 import os
 import sys
 import json
-import random
 import joblib
 import numpy as np
 
@@ -11,17 +10,31 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from sim.taxi_env import TaxiDispatchEnv
 
 
-def random_policy(num_actions):
-    return random.randint(0, num_actions - 1)
+def nearest_taxi_policy(env, state):
+    """
+    Rule-based baseline: always dispatch the closest taxi to the passenger.
+    state = (dist_taxi_0, dist_taxi_1, dist_taxi_2, pickup_x, pickup_y)
+    """
+    distances = state[:env.num_taxis]
+    return int(np.argmin(distances))
 
 
 def rl_policy(q_table, state):
-    if state not in q_table:
+    """
+    RL policy: pick the action with the highest Q-value for this state.
+    Falls back to taxi 0 if state was never seen during training.
+    """
+    key = str(state)
+    if key not in q_table:
         return 0
-    return int(np.argmax(q_table[state]))
+    return int(np.argmax(q_table[key]))
 
 
-def run_episode(env, policy_fn, q_table=None):
+def run_episode(env, policy_type, q_table=None):
+    """
+    Run a single episode.
+    policy_type: "nearest" for rule-based baseline, "rl" for Q-learning policy.
+    """
     state = env.reset()
 
     total_wait = 0
@@ -29,10 +42,10 @@ def run_episode(env, policy_fn, q_table=None):
     done = False
 
     while not done:
-        if q_table is None:
-            action = policy_fn(env.num_taxis)
+        if policy_type == "nearest":
+            action = nearest_taxi_policy(env, state)
         else:
-            action = policy_fn(q_table, state)
+            action = rl_policy(q_table, state)
 
         next_state, reward, done, info = env.step(action)
 
@@ -54,26 +67,28 @@ def evaluate():
 
     episodes = 100
 
-    random_waits = []
+    baseline_waits = []
     rl_waits = []
 
+    print("Running nearest-taxi baseline...")
     for _ in range(episodes):
-        w, _ = run_episode(env, random_policy)
-        random_waits.append(w)
+        w, _ = run_episode(env, policy_type="nearest")
+        baseline_waits.append(w)
 
+    print("Running RL policy...")
     for _ in range(episodes):
-        w, _ = run_episode(env, rl_policy, q_table)
+        w, _ = run_episode(env, policy_type="rl", q_table=q_table)
         rl_waits.append(w)
 
-    avg_random = float(np.mean(random_waits))
+    avg_baseline = float(np.mean(baseline_waits))
     avg_rl = float(np.mean(rl_waits))
 
-    improvement = ((avg_random - avg_rl) / avg_random) * 100
+    improvement = ((avg_baseline - avg_rl) / avg_baseline) * 100
 
     results = {
-        "baseline": "Random Dispatch",
+        "baseline": "Nearest-Taxi Heuristic",
         "episodes": episodes,
-        "random_avg_waiting_time": avg_random,
+        "baseline_avg_waiting_time": avg_baseline,
         "rl_avg_waiting_time": avg_rl,
         "improvement_percent": improvement
     }
@@ -84,9 +99,9 @@ def evaluate():
         json.dump(results, f, indent=4)
 
     print("\n=== Evaluation Results ===")
-    print("Random Policy Avg Wait:", avg_random)
-    print("RL Policy Avg Wait:", avg_rl)
-    print("Improvement (%):", improvement)
+    print(f"Nearest-Taxi Baseline Avg Wait : {avg_baseline:.4f}")
+    print(f"RL Policy Avg Wait             : {avg_rl:.4f}")
+    print(f"Improvement (%)                : {improvement:.2f}%")
 
 
 if __name__ == "__main__":

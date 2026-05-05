@@ -1,7 +1,7 @@
 {
-    "baseline": "Random Dispatch",
+    "baseline": "Nearest-Taxi Heuristic",
     "episodes": 100,
-    "random_avg_waiting_time": 3.1859999999999995,
-    "rl_avg_waiting_time": 2.7812,
-    "improvement_percent": 12.70558694287506
+    "baseline_avg_waiting_time": 1.9712,
+    "rl_avg_waiting_time": 2.7456000000000005,
+    "improvement_percent": -39.285714285714306
 }
