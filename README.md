@@ -33,3 +33,62 @@ We use **Q-learning** because:
 
 ```text
 (distance_taxi_0, distance_taxi_1, distance_taxi_2, pickup_x, pickup_y)
+
+## Reproducibility
+
+Clone the repository:
+
+```bash
+git clone <your-github-link>
+cd smart_taxi_dispatch_optimization
+```
+
+Create environment:
+
+```bash
+python -m venv env
+```
+
+Activate environment:
+
+```bash
+env\Scripts\activate
+```
+
+Install dependencies:
+
+```bash
+pip install -r requirements.txt
+```
+
+Train model:
+
+```bash
+python experiments/train.py --config configs/qlearning_v2_explored.yaml
+```
+
+Evaluate model:
+
+```bash
+python experiments/evaluate.py
+```
+
+Generate plots:
+
+```bash
+python experiments/plot_results.py
+```
+
+---
+
+## Monitoring Plan
+
+If deployed in a real-world smart transportation system, we would monitor:
+
+- Average passenger waiting time
+- Taxi utilization efficiency
+- Hotspot congestion levels
+- Frequency of taxi repositioning
+- Sudden increases in passenger demand
+
+This helps ensure efficient and reliable taxi dispatch performance.

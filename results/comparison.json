@@ -1,7 +1,7 @@
 {
     "baseline": "Nearest-Taxi Heuristic",
     "episodes": 100,
-    "baseline_avg_waiting_time": 1.9712,
-    "rl_avg_waiting_time": 2.7456000000000005,
-    "improvement_percent": -39.285714285714306
+    "baseline_avg_waiting_time": 2.1358,
+    "rl_avg_waiting_time": 1.1348000000000003,
+    "improvement_percent": 46.86768424009738
 }

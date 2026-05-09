@@ -3,6 +3,7 @@ import sys
 import json
 import argparse
 import random
+import mlflow
 from collections import defaultdict
 
 import yaml
@@ -36,6 +37,7 @@ def train(config):
     os.makedirs("plots", exist_ok=True)
 
     run_id = config["run_id"]
+    mlflow.start_run(run_name=run_id)
 
     env = TaxiDispatchEnv(
         grid_size=config["grid_size"],
@@ -44,7 +46,7 @@ def train(config):
         seed=42
     )
 
-    num_actions = config["num_taxis"]
+    num_actions = env.num_actions
 
     episodes = config["episodes"]
     alpha = config["learning_rate"]
@@ -53,6 +55,13 @@ def train(config):
     epsilon = config["epsilon"]
     epsilon_decay = config["epsilon_decay"]
     min_epsilon = config["min_epsilon"]
+    mlflow.log_param("episodes", episodes)
+    mlflow.log_param("learning_rate", alpha)
+    mlflow.log_param("gamma", gamma)
+    mlflow.log_param("epsilon", epsilon)
+    mlflow.log_param("epsilon_decay", epsilon_decay)
+    mlflow.log_param("min_epsilon", min_epsilon)
+
 
     q_table = make_q_table(num_actions)
 
@@ -89,6 +98,8 @@ def train(config):
 
     avg_reward = float(np.mean(episode_rewards[-50:]))
     avg_waiting_time = float(np.mean(episode_waiting_times[-50:]))
+    mlflow.log_metric("average_reward", avg_reward)
+    mlflow.log_metric("average_waiting_time", avg_waiting_time)
 
     # Save policy
     policy_data = {
@@ -98,6 +109,7 @@ def train(config):
     }
 
     joblib.dump(policy_data, config["policy_path"])
+    mlflow.log_artifact(config["policy_path"])
 
     # Save JSON result
     results = {
@@ -138,6 +150,7 @@ def train(config):
     plt.legend()
     plt.tight_layout()
     plt.savefig(config["plot_path"])
+    mlflow.log_artifact(config["plot_path"])
     plt.close()
 
     print("\nTraining completed")
@@ -147,7 +160,7 @@ def train(config):
     print("Plot saved to:", config["plot_path"])
     print("Average reward last 50 episodes:", avg_reward)
     print("Average waiting time last 50 episodes:", avg_waiting_time)
-
+    mlflow.end_run()
 
 def load_config(config_path):
     with open(config_path, "r") as f:
