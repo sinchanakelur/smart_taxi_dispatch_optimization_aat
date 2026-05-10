@@ -3,3 +3,6 @@ matplotlib
 pyyaml
 joblib
 tqdm
+fastapi
+uvicorn
+mlflow
