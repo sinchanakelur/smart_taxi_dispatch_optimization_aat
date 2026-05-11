@@ -36,13 +36,21 @@ def predict_taxi(
 
     if state not in q_table:
 
+        distances = [
+            taxi0_distance,
+            taxi1_distance,
+            taxi2_distance
+        ]
+
+        action = distances.index(min(distances))
+
         mlflow.log_param("pickup_x", pickup_x)
         mlflow.log_param("pickup_y", pickup_y)
-        mlflow.log_metric("selected_taxi", 0)
+        mlflow.log_metric("selected_taxi", action)
 
         return {
-            "selected_taxi": 0,
-            "note": "Unknown state, default taxi selected"
+            "selected_taxi": action,
+            "note": "Nearest taxi selected using fallback logic"
         }
 
     action = int(np.argmax(q_table[state]))
